@@ -1,11 +1,14 @@
-set search_target ts07nxpllogl08hdl057f_frame_timing_ccs:HDBLVT08_FSDPRBQOM8_DY4FS_1.frame
 set list_cells [collection_to_list -name_only [get_cells *]]
-
-foreach cell [lindex $list_cells 0] {
-	report_attributes -application [get_cells $cell] > cell_attributes.log
-	set ref_phys_block [exec grep "ref_phys_block" cell_attributes.log | awk {{print $5}}]
-	if {![string compare $ref_phys_block $search_target]} {
-		exec echo "find: $cell"
-		break
+set list_cells [lindex $list_cells 0]
+for {set i 0} {$i < 100} {incr i} {
+	set search_target [exec grep -A [expr 2 + $i] "Lib Cell" analyze_cells.log | tail -1 | awk {{print $1}}]
+	echo "$search_target"
+	foreach cell $list_cells {
+		set ref_phys_block [get_attribute [get_cells TOP_0_0_U0] ref_phys_block]
+		set ref_phys_block [lindex [collection_to_list -name_only $ref_phys_block] 0]
+		if {![string compare $ref_phys_block $search_target]} {
+			exec echo "find: $cell"
+			break
+		}
 	}
 }
